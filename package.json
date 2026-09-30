@@ -1,0 +1,36 @@
+{
+  "name": "edgecanvas",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "test": "vitest run --maxWorkers=2",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit && vite build",
+    "preview": "tsx server/index.ts",
+    "dev:server": "PORT=4174 ROOM_DEV_ORIGIN=http://127.0.0.1:5173 tsx server/index.ts",
+    "check": "npm test && npm run build",
+    "build:local": "npm run build",
+    "build:hosted": "tsc --noEmit && vite build --mode hosted",
+    "preview:accounts": "ROOM_ACCESS_MODE=accounts tsx server/index.ts",
+    "account:enroll": "tsx server/enroll.ts",
+    "compute:build": "npm run build:hosted && npm --prefix compute ci && npm --prefix compute run build",
+    "edge:admin": "tsx server/edge-admin.ts"
+  },
+  "dependencies": {
+    "motion": "^13.2.0",
+    "papaparse": "^5.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.2",
+    "@types/papaparse": "^5.5.2",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

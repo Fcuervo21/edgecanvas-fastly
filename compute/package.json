@@ -1,0 +1,18 @@
+{
+  "name": "edgecanvas-compute",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "EdgeCanvas on Fastly Compute: API, accounts and rooms in KV Store, live streams through Fanout.",
+  "scripts": {
+    "build": "node scripts/bundle.mjs && js-compute-runtime build/index.js bin/main.wasm",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "@fastly/js-compute": "3.46.0"
+  },
+  "devDependencies": {
+    "@fastly/cli": "16.1.0",
+    "esbuild": "^0.28.2"
+  }
+}

@@ -1,0 +1,39 @@
+node_modules/
+dist/
+dist-hosted/
+.DS_Store
+.superpowers/
+.npm-cache/
+
+.local/
+
+# Credentials and private machine configuration
+.env
+.env.*
+!.env.example
+.npmrc
+.netrc
+.fastly/
+.codex/
+.claude/
+.agents/
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*.json
+service-account*.json
+
+# Runtime state and local evidence
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+*.log
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# Personal sign-in links for the players: private, never committed
+slack/personal-links*.csv

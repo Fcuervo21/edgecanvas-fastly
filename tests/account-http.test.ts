@@ -1,0 +1,55 @@
+import { once } from 'node:events';
+import { expect, test } from 'vitest';
+import { createRoomService } from '../server/service';
+import { createRoomServer } from '../server/http';
+import { acceptanceDataset } from './fixtures/room-roster';
+
+test('cookie account HTTP blocks outsiders, forgery and local bypass; logout revokes access', async () => {
+  const dataset = acceptanceDataset(), service = createRoomService({ dataset, databasePath: ':memory:', accessMode: 'accounts' });
+  const server = createRoomServer({ service }); server.listen(0, '127.0.0.1'); await once(server, 'listening');
+  const origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+  const request = (path: string, body?: unknown, headers: Record<string, string> = {}) => fetch(origin + path, { method: body === undefined ? 'GET' : 'POST', headers: { 'content-type': 'application/json', origin, ...headers }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+  try {
+    expect((await request('/api/roster')).status).toBe(401);
+    expect((await request('/api/rooms', { name: 'Forged', hostId: dataset.players[0].id })).status).toBe(401);
+    const enrollment = service.accounts!.enroll(dataset.players[0].id, true).code;
+    const signup = { username: 'organizer', password: 'Synthetic canvas password!', enrollment };
+    expect((await request('/api/auth/register', signup, { origin: '' })).status).toBe(403);
+    const registered = await request('/api/auth/register', signup);
+    expect(registered.status).toBe(201);
+    expect(registered.headers.get('cache-control')).toBe('no-store');
+    const cookieHeader = registered.headers.get('set-cookie')!;
+    expect(cookieHeader).toContain('HttpOnly'); expect(cookieHeader).toContain('SameSite=Strict'); expect(cookieHeader).toContain('Secure');
+    const cookie = cookieHeader.split(';')[0], data = await registered.json();
+    expect(data.token).toBeUndefined();
+    const headers = { cookie, 'x-csrf-token': data.csrfToken };
+    expect((await request('/api/rooms', { name: 'Missing CSRF' }, { cookie })).status).toBe(403);
+    expect((await request('/api/rooms', { name: 'Forged', hostId: dataset.players[1].id }, headers)).status).toBe(400);
+    const created = await request('/api/rooms', { name: 'Members only' }, headers);
+    expect(created.status).toBe(201); const view = await created.json();
+    expect(view.dataset.players).toHaveLength(1);
+    expect((await request(`/api/rooms/${view.code}`, undefined, { Authorization: `Bearer ${cookie.split('=')[1]}` })).status).toBe(401);
+    expect((await request(`/api/rooms/${view.code}/invites`, undefined, { cookie })).status).toBe(404);
+    expect((await request('/api/auth/logout', {}, headers)).status).toBe(200);
+    expect((await request('/api/auth/logout', {}, headers)).status).toBe(200);
+    expect((await request(`/api/rooms/${view.code}`, undefined, { cookie })).status).toBe(401);
+    expect((await request('/api/auth/logout', {})).status).toBe(200);
+    const login = await request('/api/auth/login', { username: 'organizer', password: signup.password });
+    expect(login.status).toBe(200); expect(login.headers.get('set-cookie')).not.toBe(cookieHeader);
+    const logged = await login.json();
+    const loggedCookie = login.headers.get('set-cookie')!.split(';')[0];
+    const adminPath = `/api/admin/accounts/${logged.account.id}/recovery`;
+    expect((await request(adminPath, {}, { cookie: loggedCookie })).status).toBe(403);
+    const issued = await request(adminPath, {}, { cookie: loggedCookie, 'x-csrf-token': logged.csrfToken });
+    expect(issued.status).toBe(201); expect(issued.headers.get('cache-control')).toBe('no-store');
+    const recovery = await issued.json();
+    expect((await request('/api/auth/recover', { code: recovery.code, password: 'New synthetic password!' }, { origin: '' })).status).toBe(403);
+    const blockedReset = await request('/api/auth/recover', { code: recovery.code, password: '12345678901234567890' });
+    expect(blockedReset.status).toBe(400); expect(await blockedReset.text()).not.toContain('12345678901234567890');
+    const recovered = await request('/api/auth/recover', { code: recovery.code, password: 'New synthetic password!' });
+    expect(recovered.status).toBe(200); expect(await recovered.json()).toEqual({ recovered: true });
+    expect(recovered.headers.get('set-cookie')).toBeNull();
+    expect((await request('/api/account', undefined, { cookie: loggedCookie })).status).toBe(401);
+    expect((await request('/api/auth/recover', { code: recovery.code, password: 'New synthetic password!' })).status).toBe(400);
+  } finally { server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); service.close(); }
+}, 15000);
