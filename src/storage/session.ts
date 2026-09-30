@@ -1,7 +1,6 @@
 import { creditedThrough } from '../game/engine';
 import { SIZE } from '../game/rules';
 import type { Dataset, GameState } from '../game/types';
-import { translateLegacyMessage } from './legacy-messages';
 
 export const STORAGE_KEY = 'edgecanvas.single-player.v1';
 const uint = (value: unknown): value is number => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
@@ -26,6 +25,6 @@ export function loadSession(storage: Storage, dataset: Dataset):
         return (c.owner === null || c.owner === s.team) && (c.shieldUntil === 0 || (c.owner === s.team && c.shieldUntil > s.minute));
       })
       || !Array.isArray(s.messages) || s.messages.length > 20 || !s.messages.every((m: unknown) => typeof m === 'string')) return { kind: 'invalid' };
-    return { kind: 'valid', state: { ...s, messages: s.messages.map(translateLegacyMessage) } as GameState };
+    return { kind: 'valid', state: s as GameState };
   } catch { return { kind: 'invalid' }; }
 }

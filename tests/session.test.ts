@@ -44,26 +44,3 @@ test('refuses malformed JSON', () => {
   storage.setItem(STORAGE_KEY, '{');
   expect(loadSession(storage, data)).toEqual({ kind: 'invalid' });
 });
-test('translates existing Spanish activity without changing saved gameplay', () => {
-  const storage = memoryStorage();
-  const state = createGame(data, data.players[0].id);
-  state.messages = [
-    'Día 2: +9,192 de pintura · repetición del historial.',
-    'Día 3: sin registro.',
-    'Bomba comprado · −1,500 de pintura.',
-    'Escudo comprado · −1,000 de pintura.',
-    'Brochazo · 1 casilla pintada.',
-    'Bomba · 25 casillas pintadas.',
-    'Escudo activo en 9 casillas · 2 h simuladas.',
-  ];
-  saveSession(storage, state);
-  const loaded = loadSession(storage, data);
-  expect(loaded.kind).toBe('valid');
-  if (loaded.kind !== 'valid') throw new Error('Expected saved session');
-  expect(loaded.state).toEqual({ ...state, messages: [
-    'Day 2: +9,192 paint · history replay.', 'Day 3: no record.',
-    'Bomb purchased · −1,500 paint.', 'Shield purchased · −1,000 paint.',
-    'Brush · 1 pixel painted.', 'Bomb · 25 pixels painted.',
-    'Shield active on 9 pixels · 2 simulated hours.',
-  ] });
-});
