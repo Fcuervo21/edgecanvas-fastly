@@ -1,5 +1,6 @@
 import { champion, pixelCounts, ranking, tally, type DayResult } from '../game/standings';
 import type { Cell } from '../game/types';
+import { teamColor } from '../rooms/colors';
 
 export interface ScoreRow { rank: number; team: string; color: string; pixels: number; share: number; wins: number; joined: number; total: number; mine: boolean }
 export interface Scoreboard {
@@ -20,7 +21,7 @@ export function scoreboard(input: { members: { team: string; color: string; join
   const wins = input.days ? tally(input.days, counts, input.lastDay) : new Map<string, number>();
   const rows = ranked.map(({ team, pixels }, i): ScoreRow => {
     const people = input.members.filter(m => m.team === team);
-    return { rank: i + 1, team, color: people[0]?.color ?? '#888', pixels, share: top ? pixels / top : 0, wins: wins.get(team) ?? 0,
+    return { rank: i + 1, team, color: teamColor(team), pixels, share: top ? pixels / top : 0, wins: wins.get(team) ?? 0,
       joined: people.filter(m => m.joined).length, total: people.length, mine: team === input.team };
   });
   const won = input.days ? champion(input.days, counts, input.lastDay) : null;

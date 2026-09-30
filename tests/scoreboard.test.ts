@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest';
 import { scoreboard } from '../src/ui/scoreboard';
+import { teamColor } from '../src/rooms/colors';
 import type { Cell } from '../src/game/types';
 
 const members = [
@@ -41,4 +42,9 @@ test('on the last day the champion is marked as the final result if the day ende
 test('without day results (local rooms) there is a ranking but no winners', () => {
   const board = scoreboard({ members, cells: cells(spread('Blue', 2)), days: undefined, team: 'Blue', lastDay: false });
   expect(board.lastDay).toBeNull(); expect(board.champion).toBeNull();
+});
+
+test('a team is drawn in the same color as on the canvas, whatever color the room stored for it', () => {
+  const board = scoreboard({ members, cells: cells(spread('Blue', 2)), days: [], team: 'Blue', lastDay: false });
+  for (const row of board.rows) expect(row.color).toBe(teamColor(row.team));
 });

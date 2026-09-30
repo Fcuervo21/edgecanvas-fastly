@@ -34,6 +34,3 @@ coverage/
 playwright-report/
 test-results/
 *.tsbuildinfo
-
-# Personal sign-in links for the players: private, never committed
-slack/personal-links*.csv

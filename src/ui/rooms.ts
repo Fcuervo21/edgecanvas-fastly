@@ -1,6 +1,7 @@
 import { mountRoomGame } from './room-game';
 import type { RoomEntry, RoomInvite, RoomRoster, RoomSession, RoomView } from '../rooms/types';
 import { escapeHTML as esc } from './html';
+import { teamColor } from '../rooms/colors';
 
 const SESSION_KEY = 'edgecanvas.room-session.v1';
 async function api<T>(path: string, body?: unknown, token?: string): Promise<T> {
@@ -74,7 +75,7 @@ export async function mountRooms(root: HTMLElement) {
       </div>
       <section class="lobby-roster"><p class="eyebrow">THE GUEST LIST · FROM YOUR CSV</p><h2>Different colors. Same playground.</h2><div class="team-cards">${teams.map(team => {
         const members = roster.members.filter(m => m.team === team);
-        return `<article class="team-card" style="--crew-color:${members[0].color}"><div class="team-card-title"><i></i><h3>${esc(team)}</h3><span>${members.length}/${roster.maxTeamSize}</span></div><ul>${members.map(m => `<li>${esc(m.name)}</li>`).join('')}</ul>${members.length < roster.maxTeamSize ? `<p>${roster.maxTeamSize - members.length} roster ${members.length === 2 ? 'place' : 'places'} to confirm</p>` : ''}</article>`;
+        return `<article class="team-card" style="--crew-color:${teamColor(team)}"><div class="team-card-title"><i></i><h3>${esc(team)}</h3><span>${members.length}/${roster.maxTeamSize}</span></div><ul>${members.map(m => `<li>${esc(m.name)}</li>`).join('')}</ul>${members.length < roster.maxTeamSize ? `<p>${roster.maxTeamSize - members.length} roster ${members.length === 2 ? 'place' : 'places'} to confirm</p>` : ''}</article>`;
       }).join('')}</div></section>
       <p class="lobby-footnote">Shared territory · Individual paint buckets · The host advances the day for everyone</p>
     </main>`;
