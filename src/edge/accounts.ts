@@ -117,9 +117,10 @@ export function createEdgeAccounts(options: { kv: EdgeKV; pepper: () => Promise<
   return {
     current, requireOrganizer,
     /** Organizer tooling behind the admin secret: a one-time registration code for a roster place. */
-    async enroll(playerId: string, organizer = false, lifetimeMs = 24 * 60 * 60000) {
+    /** `force` skips the "already has an account" check: after a wipe the store can keep serving a deleted account record for a while. Registration still claims the place with an atomic insert, so forcing can never create a second account. */
+    async enroll(playerId: string, organizer = false, lifetimeMs = 24 * 60 * 60000, force = false) {
       if (typeof playerId !== 'string' || !(await roster(playerId)) || !Number.isSafeInteger(lifetimeMs) || lifetimeMs < 1000 || lifetimeMs > 7 * 24 * 60 * 60000) return fail(400, 'Invalid enrollment settings.');
-      if (await kv.get(key.player(playerId))) return fail(409, 'That participant already has an account.');
+      if (!force && await kv.get(key.player(playerId))) return fail(409, 'That participant already has an account.');
       const code = secret(), hash = await sha256(code), expiresAt = now() + lifetimeMs;
       await kv.add(key.enrollment(hash), JSON.stringify({ player: playerId, organizer: !!organizer, expiresAt } satisfies EnrollmentRecord));
       // Reissuing replaces the latest code, which revokes earlier unused ones.

@@ -18,6 +18,8 @@ Each code is tied to one exact roster player, expires after 24 hours and works o
 
 **Live drawing and scoring.** `POST /api/rooms/CODE/ink` publishes a drawing preview to the room channel; it is authorized by an HMAC ticket in the room view (2 hours) and reads/writes no storage except a sampled rate-limit record, which is why it is fast. The scoreboard is computed in the browser from the board; each closed day's leader is stored in the shared clock record.
 
+**After a wipe.** If you empty the KV Store, Fastly may keep serving deleted account records for a while, so `links` can report "already have an account" for places whose accounts are gone. Run it with `--force` (the same flag exists on `enroll`): it skips that check, and registration still refuses a second account for a taken place.
+
 **Fresh start.** `npm run edge:admin -- reset --url … --host "PLAYER_ID"` opens a new empty room (day 1, every wallet zero) and takes the old rooms off everyone's lists; accounts and step histories are untouched. Use it after test sessions and before sharing the game.
 
 **Play.** The organizer creates a room and hosts it. Everyone joins from the lobby and paints one shared 100 × 100 board. Paint is personal (one step = one paint), teams share territory, only the host advances the day (by hand, or on a daily schedule the host turns on: the first request after the chosen time moves the shared clock, missed days are caught up, and it never passes the last recorded day). The calendar moves through the 62 recorded days (July 1 to August 31); on the last day the button becomes "Keep walking!" and the game waits for new steps. Adding days later needs a new dataset version applied to existing rooms (not built yet).

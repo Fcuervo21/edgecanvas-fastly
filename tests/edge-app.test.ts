@@ -210,3 +210,20 @@ test('the organizer tool starts a fresh room and retires the old ones, keeping a
   expect(view.isHost).toBe(false);
   expect(((await call('GET', `/api/rooms/${reset.data.code}`, { cookie: fernando.cookie })).data as EdgeView).isHost).toBe(true);
 });
+
+test('the organizer tool can force a code for a roster place even when the store still reports an old account for it', async () => {
+  const { call, member } = setup();
+  await call('PUT', '/api/admin/dataset', { admin: ADMIN, body: dataset });
+  await member(host, 'fernando', true);
+  // Normally a place that has an account is refused...
+  expect((await call('POST', '/api/admin/enroll', { admin: ADMIN, body: { playerId: host } })).status).toBe(409);
+  // ...but after a wipe the store can keep serving a deleted account record for a while, so the organizer may force a code.
+  const forced = await call('POST', '/api/admin/enroll', { admin: ADMIN, body: { playerId: host, force: true } });
+  expect(forced.status).toBe(201);
+  expect(forced.data.playerId).toBe(host);
+  // Forcing never creates a second account: registration claims the place with an atomic insert, which an existing account wins.
+  const second = await call('POST', '/api/auth/register', { body: { username: 'impostor', password, enrollment: forced.data.code } });
+  expect(second.status).toBe(400);
+  // Anything other than true is ignored.
+  expect((await call('POST', '/api/admin/enroll', { admin: ADMIN, body: { playerId: host, force: 'yes' } })).status).toBe(409);
+});
