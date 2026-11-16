@@ -12,7 +12,7 @@ npm run edge:admin -- upload --url https://YOUR-SERVICE
 npm run edge:admin -- enroll --url https://YOUR-SERVICE --player "EXACT_ROSTER_PLAYER_ID" [--organizer]
 ```
 
-Each code is tied to one exact roster player, expires after 24 hours and works once. Deliver it privately to the verified person and delete the file in `.local/`. Use at least two organizers: recovering an account needs one.
+Each code is tied to one exact roster player, expires after 24 hours (or after `--days N`, up to 90 days, for `enroll` and `links`) and works once; a new code for the same player replaces the old one. Deliver it privately to the verified person and delete the file in `.local/`. Use at least two organizers: recovering an account needs one.
 
 **Player.** Opens the site, creates an account with a username, a password of 15+ characters (common or breached passwords are refused) and the code. From then on they sign in with username and password. The account is bound to their roster place: they cannot change player, team or role, and they only ever see their own step history. Sessions last 8 hours in an HttpOnly cookie; signing out ends the session and its live stream.
 

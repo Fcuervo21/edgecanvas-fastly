@@ -164,7 +164,7 @@ export function createEdgeApp(options: EdgeAppOptions) {
     if (path === '/api/admin/enroll' && method === 'POST') {
       await admin(request, client);
       const input = await body(request) as { playerId?: unknown; organizer?: unknown };
-      // `days` (1 to 7) lets an organizer hand out links that outlast a single day; the default stays 24 hours.
+      // `days` (1 to 90) lets an organizer hand out links that outlast a single day; the default stays 24 hours.
       const days = (input as { days?: unknown }).days;
       return json(201, await accounts.enroll(input.playerId as string, input.organizer === true, days === undefined ? undefined : Number.isInteger(days) ? (days as number) * 24 * 60 * 60000 : NaN, (input as { force?: unknown }).force === true));
     }

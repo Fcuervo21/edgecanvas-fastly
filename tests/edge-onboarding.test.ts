@@ -44,13 +44,13 @@ test('unknown, malformed and used codes all get the same refusal', async () => {
   expect((await call('POST', '/api/auth/enrollment', {})).status).toBe(400);
 });
 
-test('an organizer can issue codes that last up to seven days, and no longer', async () => {
+test('an organizer can issue codes that last up to ninety days, and no longer', async () => {
   const { call, ready } = setup();
   await ready();
-  const week = await call('POST', '/api/admin/enroll', { playerId: ana.id, days: 7 }, true);
-  expect(week.status).toBe(201);
-  expect(week.data.expiresAt - CLOCK).toBe(7 * 24 * 60 * 60 * 1000);
-  expect((await call('POST', '/api/admin/enroll', { playerId: bruno.id, days: 8 }, true)).status).toBe(400);
+  const season = await call('POST', '/api/admin/enroll', { playerId: ana.id, days: 90 }, true);
+  expect(season.status).toBe(201);
+  expect(season.data.expiresAt - CLOCK).toBe(90 * 24 * 60 * 60 * 1000);
+  expect((await call('POST', '/api/admin/enroll', { playerId: bruno.id, days: 91 }, true)).status).toBe(400);
   expect((await call('POST', '/api/admin/enroll', { playerId: bruno.id, days: 0 }, true)).status).toBe(400);
   expect((await call('POST', '/api/admin/enroll', { playerId: bruno.id }, true)).data.expiresAt - CLOCK).toBe(24 * 60 * 60 * 1000);
 });

@@ -8,8 +8,8 @@ import { parseSteps } from '../src/data/steps';
 // dataset is uploaded to the service's private KV Store.
 const usage = `Usage:
   EDGE_ADMIN_TOKEN=… npm run edge:admin -- upload --url https://your-service.example
-  EDGE_ADMIN_TOKEN=… npm run edge:admin -- enroll --url https://your-service.example --player "EXACT_ROSTER_PLAYER_ID" [--organizer] [--days 1-7] [--force]
-  EDGE_ADMIN_TOKEN=… npm run edge:admin -- links --url https://your-service.example [--days 1-7] [--organizer "EXACT_ROSTER_PLAYER_ID"] [--force]   (personal links for everyone without an account; --force also covers places the store still reports as taken right after a wipe)
+  EDGE_ADMIN_TOKEN=… npm run edge:admin -- enroll --url https://your-service.example --player "EXACT_ROSTER_PLAYER_ID" [--organizer] [--days 1-90] [--force]
+  EDGE_ADMIN_TOKEN=… npm run edge:admin -- links --url https://your-service.example [--days 1-90] [--organizer "EXACT_ROSTER_PLAYER_ID"] [--force]   (personal links for everyone without an account; --force also covers places the store still reports as taken right after a wipe)
   EDGE_ADMIN_TOKEN=… npm run edge:admin -- reset --url https://your-service.example --host "EXACT_ROSTER_PLAYER_ID" [--name Splash]   (a clean start: new empty room, old rooms leave everyone's lists; accounts and roster stay)
   EDGE_ADMIN_TOKEN=… npm run edge:admin -- live --url https://your-service.example [--count 10]   (checks Fanout end to end: opens a held stream, publishes pings, measures delivery)
 Local Viceroy: use --url http://127.0.0.1:7676 and the token in compute/.secrets/admin_token.`;

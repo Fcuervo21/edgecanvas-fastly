@@ -14,6 +14,8 @@ interface SessionRecord { account: string; epoch: number; expiresAt: number }
 interface EnrollmentRecord { player: string; organizer: boolean; expiresAt: number }
 
 export const ACCOUNT_SESSION_MS = 8 * 60 * 60 * 1000;
+/** A personal link can stay valid for a whole season (the owner needs links that last about two and a half months). */
+export const MAX_ENROLLMENT_DAYS = 90;
 /** Every credential attempt from one network: 120 per 15 minutes (a whole roster may sit behind one office address). */
 const ADDRESS_LIMIT = 120, WINDOW = 900;
 /** Failed sign-ins: 5 per account per network, and 50 per account overall, per 15 minutes. */
@@ -119,7 +121,7 @@ export function createEdgeAccounts(options: { kv: EdgeKV; pepper: () => Promise<
     /** Organizer tooling behind the admin secret: a one-time registration code for a roster place. */
     /** `force` skips the "already has an account" check: after a wipe the store can keep serving a deleted account record for a while. Registration still claims the place with an atomic insert, so forcing can never create a second account. */
     async enroll(playerId: string, organizer = false, lifetimeMs = 24 * 60 * 60000, force = false) {
-      if (typeof playerId !== 'string' || !(await roster(playerId)) || !Number.isSafeInteger(lifetimeMs) || lifetimeMs < 1000 || lifetimeMs > 7 * 24 * 60 * 60000) return fail(400, 'Invalid enrollment settings.');
+      if (typeof playerId !== 'string' || !(await roster(playerId)) || !Number.isSafeInteger(lifetimeMs) || lifetimeMs < 1000 || lifetimeMs > MAX_ENROLLMENT_DAYS * 24 * 60 * 60000) return fail(400, 'Invalid enrollment settings.');
       if (!force && await kv.get(key.player(playerId))) return fail(409, 'That participant already has an account.');
       const code = secret(), hash = await sha256(code), expiresAt = now() + lifetimeMs;
       await kv.add(key.enrollment(hash), JSON.stringify({ player: playerId, organizer: !!organizer, expiresAt } satisfies EnrollmentRecord));
