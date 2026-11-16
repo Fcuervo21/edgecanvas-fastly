@@ -4,7 +4,7 @@
 share one color, players keep their own paint, and the whole game runs on **Fastly Compute**: no origin server, no
 other cloud.
 
-It was built for the CodeCapsules 2026 steps challenge (23 players, 10 teams, 62 days of real step data) and is
+It was built for the CodeCapsules 2026 steps challenge (23 players, 10 teams, 92 days of real step data) and is
 running for real at **https://edgecanvas.edgecompute.app**. Sign-in is invite-only, so the live site is for the players;
 this repository is the full source so you can read it, learn from it, or run your own copy.
 
@@ -80,7 +80,7 @@ sh compute/scripts/provision.sh my-edgecanvas my-edgecanvas.edgecompute.app
 
 ## Sample data
 
-`StepsData/sample_step_data.csv` is **synthetic**: 23 invented players in 10 invented teams with 62 days of made-up
+`StepsData/sample_step_data.csv` is **synthetic**: 23 invented players in 10 invented teams with 92 days of made-up
 steps (including missing days). Replace it with your own CSV in the same format to run a challenge of your own; see
 [StepsData/README.md](StepsData/README.md).
 

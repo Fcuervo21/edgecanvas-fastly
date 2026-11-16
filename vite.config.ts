@@ -1,5 +1,7 @@
+/// <reference types="vitest/config" />
 import { resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
+import { configDefaults } from 'vitest/config';
 
 function hostedBoundary(): Plugin {
   return {
@@ -21,5 +23,7 @@ export default defineConfig(({ mode }) => ({
   plugins: mode === 'hosted' ? [hostedBoundary()] : [],
   // Hosted assets must not inherit files copied from the local public directory.
   ...(mode === 'hosted' ? { publicDir: false, build: { outDir: 'dist-hosted' } } : {}),
+  // video/ holds the tutorial's own tooling (node:test) and a git-ignored staging copy of the app.
+  test: { exclude: [...configDefaults.exclude, 'video/**', 'brag-output/**'] },
   server: { host: '127.0.0.1', proxy: { '/api': { target: 'http://127.0.0.1:4174', changeOrigin: true } } },
 }));

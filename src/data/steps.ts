@@ -14,7 +14,9 @@ export function parseSteps(csv: string): Dataset {
   const first = Papa.parse<string[]>(csv.replace(/^\uFEFF/, ''), { preview: 1 }).data[0];
   const headers = first?.map(h => h.trim()) ?? [];
   if (new Set(headers).size !== headers.length) throw new Error('Duplicate column in the CSV.');
-  for (const key of ['Team Source', 'Name', 'Total Steps', 'Daily Step Goal']) {
+  // Exports name people either in one `Name` column or in `First Name` + `Last Name`; both give the same id.
+  const split = !headers.includes('Name') && headers.includes('First Name') && headers.includes('Last Name');
+  for (const key of ['Team Source', ...(split ? [] : ['Name']), 'Total Steps', 'Daily Step Goal']) {
     if (!headers.includes(key)) throw new Error(`Missing column ${key}.`);
   }
   const dates = headers.filter(h => /^\d{4}-\d{2}-\d{2}$/.test(h)).sort();
@@ -34,7 +36,7 @@ export function parseSteps(csv: string): Dataset {
   const players: Player[] = parsed.data.map((row, index) => {
     const context = `row ${index + 2}`;
     const team = row['Team Source']?.trim().replace(/\s+/g, ' ');
-    const name = row.Name?.trim().replace(/\s+/g, ' ');
+    const name = (split ? `${row['First Name'] ?? ''} ${row['Last Name'] ?? ''}` : row.Name ?? '').trim().replace(/\s+/g, ' ');
     if (!team || !name) throw new Error(`Missing team or name in ${context}.`);
     const id = `${team}:${name}`;
     if (ids.has(id)) throw new Error(`Duplicate participant in ${context}.`);
